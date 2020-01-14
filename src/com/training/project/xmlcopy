@@ -1,0 +1,196 @@
+package com.training.project;
+
+import javax.xml.bind.JAXBElement;
+import javax.xml.namespace.QName;
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.OutputStream;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+
+import org.w3c.dom.Element;
+import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
+import org.w3c.dom.*;
+
+import javax.xml.bind.JAXBContext;
+import javax.xml.bind.JAXBException;
+import javax.xml.bind.Marshaller;
+import javax.xml.bind.Unmarshaller;
+import java.util.ArrayList;
+import java.util.List;
+
+//import javax.swing.text.Document;
+public class XMLFileHandler implements MyFileHandler {
+
+
+    @Override
+    public Employee readData(int readCounter)
+    //public ArrayList<Employee> readData()
+    {
+        //ArrayList<Employee> dataCollection = new ArrayList<Employee>();
+        try {
+
+
+            File xmlFile = new File("employee.xml");
+
+            DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();
+            DocumentBuilder dBuilder = dbFactory.newDocumentBuilder();
+            org.w3c.dom.Document doc = dBuilder.parse(xmlFile);
+            doc.getDocumentElement().normalize();
+            NodeList nList = doc.getElementsByTagName("employee");
+
+            //for(int i=0;i<100;i++) {
+                Employee readValue = new Employee();
+                Node nNode = nList.item(readCounter);
+                if (nNode.getNodeType() == Node.ELEMENT_NODE) {
+                    Element eElement = (Element) nNode;
+                    readValue.setFirstName(eElement.getElementsByTagName("firstName").item(0).getTextContent());
+                    readValue.setLastName(eElement.getElementsByTagName("lastName").item(0).getTextContent());
+                    String sDate = eElement.getElementsByTagName("dateOfBirth").item(0).getTextContent();
+                    Date date = new SimpleDateFormat("MM/dd/yyy").parse(sDate);
+                    readValue.setDateOfBirth(date);
+                    String sExperience = eElement.getElementsByTagName("experience").item(0).getTextContent();
+                    Double experience = Double.parseDouble(sExperience);
+                    readValue.setExperience(experience);
+
+                //}
+                //System.out.println(readCounter + ": " + readValue);
+                return readValue;
+            }
+
+                //dataCollection.add(readValue);
+                //return dataCollection;
+
+
+            //return dataCollection;
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        //return dataCollection;
+        return null;
+    }
+
+    /*public void writeData(Employee writeVal)
+    {
+        try
+        {
+            DocumentBuilderFactory documentFactory = DocumentBuilderFactory.newInstance();
+            DocumentBuilder documentBuilder = documentFactory.newDocumentBuilder();
+            Document document = documentBuilder.newDocument();
+
+            Element root = document.createElement("employees");
+            //document.appendChild(root);
+
+            Element employee = document.createElement("employee");
+            root.appendChild(employee);
+
+            Element firstName = document.createElement("firstName");
+            firstName.appendChild(document.createTextNode(writeVal.getFirstName()));
+
+            Element lastName = document.createElement("lastName");
+            lastName.appendChild(document.createTextNode(writeVal.getFirstName()));
+
+            Element dateOfBirth = document.createElement("dateOfBirth");
+            Date date = writeVal.getDateOfBirth();
+            DateFormat dateFormat = new SimpleDateFormat("MM/dd/yyyy");
+            String sDate = dateFormat.format(date);
+            dateOfBirth.appendChild(document.createTextNode(sDate));
+
+            String exp = String.valueOf(writeVal.getExperience());
+            Element experience = document.createElement("experience");
+            experience.appendChild(document.createTextNode(exp));
+
+            root.appendChild(employee);
+            document.appendChild(root);
+
+            TransformerFactory transformerFactory = TransformerFactory.newInstance();
+            Transformer transformer = transformerFactory.newTransformer();
+            DOMSource domSource = new DOMSource(document);
+            StreamResult streamResult = new StreamResult(new File("employee2.xml"));
+
+            transformer.transform(domSource,streamResult);
+
+
+
+
+
+        }
+        catch (ParserConfigurationException e)
+        {
+            e.printStackTrace();
+        }catch(TransformerConfigurationException e)
+        {
+            e.printStackTrace();
+        }catch (TransformerException e)
+        {
+            e.printStackTrace();
+        }
+
+    }*/
+
+
+    public void writeData(Employee writeVal) {
+        //File xmlFile = new File("employee2.xml");
+        //String configFileName = "employee2.xml";
+        //File configFile = new File(XMLFileHandler.class.getResource(configFileName).getFile());
+        try {
+
+            JAXBContext jaxbContext = JAXBContext.newInstance(Employee.class);
+
+            /*Unmarshaller unmarshaller = jaxbContext.createUnmarshaller();
+            Employee empObj = (Employee) unmarshaller.unmarshal(configFile);
+            ArrayList<Employee> empList = new ArrayList<Employee>();
+            empList.add(writeVal);
+            //empObj.setEmployee();
+            empObj = writeVal;*/
+
+            Marshaller jaxbMarshaller = jaxbContext.createMarshaller();
+            jaxbMarshaller.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, Boolean.TRUE);
+            JAXBElement<Employee> jaxbElement = new JAXBElement<Employee>(new QName("", "employee"), Employee.class, writeVal);
+
+
+            OutputStream xmlFile = new FileOutputStream("employee2.xml", true);
+
+            jaxbMarshaller.marshal(jaxbElement, xmlFile);
+        } catch (Exception e) {
+            System.out.println(e);
+        }
+    }
+
+
+
+
+
+       /* public void writeData(Employee[] writeVal)
+        {
+
+            try
+            {
+
+                JAXBContext jaxbContext = JAXBContext.newInstance(Employee.class);
+
+
+                Marshaller jaxbMarshaller = jaxbContext.createMarshaller();
+                jaxbMarshaller.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, Boolean.TRUE);
+                File xmlFile = new File("employee2.xml");
+                for(int i=0;i<10;i++) {
+                    JAXBElement<Employee> jaxbElement = new JAXBElement<Employee>(new QName("", "employee"), Employee.class, writeVal[i])
+                    ;
+
+
+
+
+                    jaxbMarshaller.marshal(jaxbElement, xmlFile);
+                }
+            }
+            catch (JAXBException e)
+            {
+                e.printStackTrace();
+            }
+        }*/
+}
